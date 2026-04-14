@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/#about</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/#practice</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/#matters</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/#experience</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.huangdongmeilawyer.com/#contact</loc>
+    <lastmod><?php echo date('Y-m-d'); ?></lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.70</priority>
+  </url>
+</urlset>

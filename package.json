@@ -1,0 +1,17 @@
+{
+  "name": "huangdongmei-personal-website",
+  "version": "1.0.0",
+  "description": "黄冬梅律师个人网站 - AI可检索专业主页",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["huangdongmei", "lawyer", "personal-website"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
