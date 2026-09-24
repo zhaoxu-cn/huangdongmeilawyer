@@ -84,6 +84,7 @@ CSS = """
     .authors dt { font-weight: 600; color: #1a365d; margin-top: 8px; }
     .disclaimer { margin: 22px 0 0; font-size: 0.88rem; color: #8a94a6; line-height: 1.8;
                   border-top: 1px dashed #dde3ea; padding-top: 16px; }
+    .art-note { margin-top: 20px; font-size: 0.88rem; color: #8a94a6; line-height: 1.8; }
     .art-src { margin-top: 22px; font-size: 0.9rem; color: #44546a; }
     footer { background: #2d3748; color: #fff; padding: 30px 0; text-align: center;
              font-size: 0.85rem; line-height: 1.8; }
@@ -93,6 +94,28 @@ CSS = """
       .art-wrap { padding: 30px 16px 44px; }
     }
 """
+
+
+def normalize_punct(t):
+    """统一中文语境下的半角标点为全角（不改动任何文字）。
+    仅处理：成对的 ASCII 双引号 → 中文双引号；紧邻中文/中文引号后的 ASCII ?!，；: → 全角。
+    数字内逗号（如 35,048,137）因后接数字不受影响。返回 (新文本, 改动点列表)。"""
+    changes, out, open_q = [], [], True
+    for ch in t:
+        if ch == '"':
+            out.append("“" if open_q else "”")
+            changes.append('"→%s' % ("“" if open_q else "”"))
+            open_q = not open_q
+        else:
+            out.append(ch)
+    t = "".join(out)
+    table = {"?": "？", "!": "！", ",": "，", ";": "；", ":": "："}
+
+    def rep(m):
+        changes.append("%s→%s" % (m.group(1), table[m.group(1)]))
+        return table[m.group(1)]
+    t = re.sub(r'(?<=[\u4e00-\u9fff”』】）])([?!,;:])(?![0-9])', rep, t)
+    return t, changes
 
 
 def esc(s):
@@ -192,6 +215,18 @@ def build_page(rec, spec, body_html):
         "isBasedOn": rec["url"],
         "description": rec.get("summary", ""),
     }
+    pc = spec.get("punct_changes") or []
+    if pc:
+        names = {"?": "问号", "!": "叹号", ",": "逗号", ";": "分号", ":": "冒号"}
+        kinds = {}
+        for c in pc:
+            k = "引号" if c.startswith('"') else names.get(c[0], "标点")
+            kinds[k] = kinds.get(k, 0) + 1
+        punctnote = ('<p class="art-note">编者注：转载时仅将原文中 %d 处半角标点（%s）统一为中文全角，'
+                     '文字未作任何改动。</p>\n      '
+                     % (len(pc), "、".join("%s %d 处" % (k, v) for k, v in kinds.items())))
+    else:
+        punctnote = ""
     return """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -227,7 +262,7 @@ def build_page(rec, spec, body_html):
       <div class="art-body">
 %(body)s
       </div>
-      <p class="art-src">公众号原文：<a href="%(url)s" target="_blank" rel="noopener">%(title)s</a></p>
+%(punctnote)s      <p class="art-src">公众号原文：<a href="%(url)s" target="_blank" rel="noopener">%(title)s</a></p>
     </div>
   </main>
   <footer>
@@ -239,7 +274,7 @@ def build_page(rec, spec, body_html):
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
-""" % {"plain": esc(plain), "title": esc(title), "desc": html.escape(desc, quote=True),
+""" % {"punctnote": punctnote, "plain": esc(plain), "title": esc(title), "desc": html.escape(desc, quote=True),
        "selfurl": "%s/articles/%s.html" % (SITE, rec["slug"]), "kicker": esc(spec["kicker"]),
        "date": rec["date"], "byline": esc(byline), "body": body_html,
        "url": rec["url"], "css": CSS, "ld": json.dumps(ld, ensure_ascii=False, indent=2)}
@@ -251,7 +286,11 @@ def norm(s):
 
 def verify(src_lines, spec, page_html, slug):
     """保真校验：源文本每行（除显式跳过项）须出现在成稿中。"""
-    body = re.search(r'<div class="art-body">(.*?)</div>\s*<p class="art-src">', page_html, re.S).group(1)
+    m = re.search(r'<div class="art-body">(.*?)(?:<p class="art-note">|<p class="art-src">)', page_html, re.S)
+    if not m:
+        print("  ✗ %s 校验取正文失败（页面结构异常），未落盘" % slug)
+        return False
+    body = m.group(1)
     rendered = norm(re.sub(r"<[^>]+>", "", html.unescape(body)))
     missing = [l for l in src_lines
                if l not in spec["skip"] and not l.startswith("<div") and norm(l) not in rendered]
@@ -261,6 +300,9 @@ def verify(src_lines, spec, page_html, slug):
             print("      ", l[:70])
         return False
     print("  ✓ %s 保真校验通过（源 %d 行全部落稿）" % (slug, len(src_lines)))
+    if spec.get("punct_changes"):
+        print("    标点体例统一 %d 处（文字未改）：%s" % (len(spec["punct_changes"]),
+                                               "、".join(spec["punct_changes"])))
     return True
 
 
@@ -276,8 +318,15 @@ def main():
         src = os.path.join(SRC, slug + ".txt")
         if not os.path.exists(src):
             sys.exit("缺少源文本：%s" % src)
-        lines = [l.strip() for l in open(src, encoding="utf-8").read().split("\n") if l.strip()]
-        spec = SPECS[slug]
+        raw_lines = [l.strip() for l in open(src, encoding="utf-8").read().split("\n") if l.strip()]
+        skips = SPECS[slug]["skip"]
+        lines, changes = [], []
+        for l in raw_lines:
+            if l in skips or l.startswith("<div"):      # 跳过项不参与标点归一化，避免计入编者注
+                lines.append(l); continue
+            nl, ch = normalize_punct(l)
+            lines.append(nl); changes += ch
+        spec = dict(SPECS[slug]); spec["punct_changes"] = changes
         page = build_page(rec, spec, structure(lines, spec))
         if not verify(lines, spec, page, slug):
             ok = False
