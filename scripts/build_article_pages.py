@@ -81,6 +81,10 @@ CSS = """
     .authors { background: #e8f4f8; border-radius: 8px; padding: 20px 24px; margin: 34px 0 0; }
     .authors h2 { font-size: 1.05rem; color: #1a365d; margin-bottom: 12px; }
     .authors dl { font-size: 0.95rem; color: #44546a; line-height: 1.9; }
+    .authors dt.has-photo { display: flex; align-items: center; gap: 14px; font-size: 1.02rem; }
+    .authors dt:not(.has-photo) { padding-left: 78px; }   /* 无头像作者与有头像作者的姓名列对齐 */
+    .authors dt.has-photo img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+                                flex: 0 0 64px; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
     .authors dt { font-weight: 600; color: #1a365d; margin-top: 8px; }
     .disclaimer { margin: 22px 0 0; font-size: 0.88rem; color: #8a94a6; line-height: 1.8;
                   border-top: 1px dashed #dde3ea; padding-top: 16px; }
@@ -161,9 +165,15 @@ def structure(lines, spec):
                     block.append(lines[j]); j += 1
                 dl, k = [], 0
                 names = {"黄冬梅", "蒋婷婷", "秦悦航", "赵寒竹", "彭瑶"}
+                photos = {"黄冬梅": "../assets/portrait-square.jpg"}
                 while k < len(block):
                     if block[k] in names:
-                        dl.append("<dt>%s</dt>" % esc(block[k]))
+                        if block[k] in photos:
+                            dl.append('<dt class="has-photo"><img src="%s" alt="%s肖像照" '
+                                      'width="600" height="600" loading="lazy">%s</dt>'
+                                      % (photos[block[k]], esc(block[k]), esc(block[k])))
+                        else:
+                            dl.append("<dt>%s</dt>" % esc(block[k]))
                         k += 1
                         while k < len(block) and block[k] not in names:
                             dl.append("<dd>%s</dd>" % esc(block[k])); k += 1
@@ -239,6 +249,8 @@ def build_page(rec, spec, body_html):
   <meta property="og:title" content="%(title)s">
   <meta property="og:description" content="%(desc)s">
   <meta property="og:url" content="%(selfurl)s">
+  <meta property="og:image" content="%(site)s/assets/portrait-huangdongmei.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="%(selfurl)s">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <script type="application/ld+json">
@@ -275,7 +287,7 @@ def build_page(rec, spec, body_html):
 </body>
 </html>
 """ % {"punctnote": punctnote, "plain": esc(plain), "title": esc(title), "desc": html.escape(desc, quote=True),
-       "selfurl": "%s/articles/%s.html" % (SITE, rec["slug"]), "kicker": esc(spec["kicker"]),
+       "selfurl": "%s/articles/%s.html" % (SITE, rec["slug"]), "site": SITE, "kicker": esc(spec["kicker"]),
        "date": rec["date"], "byline": esc(byline), "body": body_html,
        "url": rec["url"], "css": CSS, "ld": json.dumps(ld, ensure_ascii=False, indent=2)}
 
