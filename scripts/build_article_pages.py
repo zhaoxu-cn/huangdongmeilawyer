@@ -37,9 +37,9 @@ SPECS = {
     },
 }
 
-RELATED = {  # 「相关阅读」中的标题 → 本站详情页
+RELATED = {  # 「相关阅读」中的标题 → 本站详情页文件名（详情页同在 articles/ 下，用同目录相对链接）
     "股份司法强制执行后，业绩补偿义务该由谁承担？":
-        "articles/2026-04-09-performance-compensation-after-judicial-enforcement.html",
+        "2026-04-09-performance-compensation-after-judicial-enforcement.html",
 }
 
 CSS = """
