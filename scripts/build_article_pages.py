@@ -214,16 +214,34 @@ def build_page(rec, spec, body_html):
     byline = "黄冬梅（国浩律师（重庆）事务所合伙人）"
     if "蒋婷婷" in rec.get("source", "") or "合著" in rec.get("source", ""):
         byline = "黄冬梅（国浩律师（重庆）事务所合伙人）、蒋婷婷（国浩律师（重庆）事务所律师）"
+    selfurl = "%s/articles/%s.html" % (SITE, rec["slug"])
+    authors, names = [], ("黄冬梅、蒋婷婷" if "蒋婷婷" in byline else "黄冬梅").split("、")
+    for n in names:
+        n = n.strip()
+        if n == "黄冬梅":      # 与首页 Person 节点同一实体（@id 打通实体识别）
+            authors.append({"@type": "Person", "@id": SITE + "/#person", "name": n,
+                            "url": SITE + "/", "jobTitle": "国浩律师（重庆）事务所合伙人",
+                            "image": SITE + "/assets/portrait-huangdongmei.jpg"})
+        else:
+            authors.append({"@type": "Person", "name": n,
+                            "affiliation": {"@id": SITE + "/#organization"}})
+    text = re.sub(r"<[^>]+>", "", body_html)
     ld = {
         "@context": "https://schema.org", "@type": "Article",
+        "@id": selfurl + "#article",
         "headline": plain, "inLanguage": "zh-CN",
         "datePublished": rec["date"],
-        "author": [{"@type": "Person", "name": n.strip()} for n in
-                   ("黄冬梅、蒋婷婷" if "蒋婷婷" in byline else "黄冬梅").split("、")],
-        "publisher": {"@type": "Organization", "name": "国浩律师（重庆）事务所"},
-        "mainEntityOfPage": "%s/articles/%s.html" % (SITE, rec["slug"]),
+        "dateModified": __import__("datetime").date.today().isoformat(),
+        "author": authors,
+        "publisher": {"@type": "Organization", "@id": SITE + "/#organization",
+                      "name": "国浩律师（重庆）事务所"},
+        "mainEntityOfPage": {"@type": "WebPage", "@id": selfurl},
         "isBasedOn": rec["url"],
         "description": rec.get("summary", ""),
+        "image": SITE + "/assets/portrait-huangdongmei.jpg",
+        "articleSection": spec["kicker"],
+        "wordCount": len(re.sub(r"\s+", "", text)),
+        "keywords": "资本市场,债券发行,公司法,国浩视点",
     }
     pc = spec.get("punct_changes") or []
     if pc:
@@ -250,7 +268,12 @@ def build_page(rec, spec, body_html):
   <meta property="og:description" content="%(desc)s">
   <meta property="og:url" content="%(selfurl)s">
   <meta property="og:image" content="%(site)s/assets/portrait-huangdongmei.jpg">
+  <meta property="og:site_name" content="黄冬梅律师">
+  <meta property="og:locale" content="zh_CN">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="%(title)s">
+  <meta name="twitter:description" content="%(desc)s">
+  <meta name="twitter:image" content="%(site)s/assets/portrait-huangdongmei.jpg">
   <link rel="canonical" href="%(selfurl)s">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <script type="application/ld+json">
@@ -345,18 +368,6 @@ def main():
             continue
         open(os.path.join(OUT, slug + ".html"), "w", encoding="utf-8").write(page)
         print("  已生成 articles/%s.html（%d 字节）" % (slug, len(page)))
-    # sitemap 同步
-    sm = os.path.join(ROOT, "sitemap.xml")
-    urls = ['<url>\n    <loc>%s/</loc>\n    <lastmod>%s</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>1.0</priority>\n  </url>'
-            % (SITE, "2026-09-24")]
-    for rec in data.get("articles", []):
-        if rec.get("slug") in SPECS:
-            urls.append('<url>\n    <loc>%s/articles/%s.html</loc>\n    <lastmod>%s</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.6</priority>\n  </url>'
-                        % (SITE, rec["slug"], rec["date"]))
-    open(sm, "w", encoding="utf-8").write(
-        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  '
-        + "\n  ".join(urls) + "\n</urlset>\n")
-    print("  sitemap.xml 已同步（%d 条 URL）" % len(urls))
     return 0 if ok else 1
 
 
