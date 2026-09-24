@@ -45,6 +45,27 @@ def parse(raw, url):
     return {"date": date, "title": title, "url": url, "source": source, "body": body}
 
 
+def parse_checked(url, tries=3):
+    """抓取并校验正文文本；WeChat 偶发返回带转义残留的版本（\x22、\\"、U+FFFD），
+    校验不过则重取。发现于 2026-09-24：同链接两次抓取，一次出现转义残留与乱码。"""
+    last = ""
+    for n in range(tries):
+        a = parse_checked(url)
+        b = a["body"]
+        bad = []
+        if "\ufffd" in b:
+            bad.append("U+FFFD 乱码")
+        if "\\x" in b or '\\"' in b:
+            bad.append("转义残留")
+        if len(b) < 800:
+            bad.append("正文过短(%d)" % len(b))
+        if not bad:
+            return a
+        last = "、".join(bad)
+        print("  第 %d 次抓取文本异常（%s），重取" % (n + 1, last), file=sys.stderr)
+    sys.exit("正文校验未通过（%s）：%s" % (last, url))
+
+
 def load():
     if not os.path.exists(DATA):
         return {"project_reports": [], "articles": []}

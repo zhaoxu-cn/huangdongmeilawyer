@@ -22,11 +22,20 @@ def esc(s):
 
 
 def render_item(a):
+    """有 slug 的专业文章链到本站全文页，并另附公众号原文入口；项目报道直链公众号。"""
+    if a.get("slug"):
+        head = '<h3><a href="articles/%s.html">%s</a></h3>' % (a["slug"], esc(a["title"]))
+    else:
+        head = '<h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>' % (a["url"], esc(a["title"]))
     out = ['<article class="article-item">',
-           '          <h3><a href="%s" target="_blank" rel="noopener">%s</a></h3>' % (a["url"], esc(a["title"])),
+           '          ' + head,
            '          <p class="article-meta">%s · %s</p>' % (esc(a.get("source", "")), a["date"])]
     if a.get("summary"):
         out.append('          <p class="article-summary">%s</p>' % esc(a["summary"]))
+    if a.get("slug"):
+        out.append('          <p class="article-more"><a href="articles/%s.html">阅读全文</a>'
+                   '　·　<a href="%s" target="_blank" rel="noopener">公众号原文</a></p>'
+                   % (a["slug"], a["url"]))
     out.append('        </article>')
     return "\n        ".join(out)
 
