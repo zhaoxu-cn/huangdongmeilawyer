@@ -24,6 +24,14 @@
   ],
   "articles": [
     {
+      "date": "2026-09-25",
+      "title": "AI助手伸进代码仓库：拿走的是什么，“默认开启”能算同意吗",
+      "url": "https://mp.weixin.qq.com/s/35BHqcTb0JhAr3Lu2Tq5sQ",
+      "source": "AI合规实务手记",
+      "summary": "从一起AI编程工具被曝上传用户本地工作区的事件出发，讨论四个可反复适用的法律问题：上传内容的数据类型分层、“默认开启”能否构成《个人信息保护法》意义上的同意、数据出境的主体识别与数量门槛，以及行政、民事、刑事三条追责路径的实务评估。",
+      "slug": "2026-09-25-ai-coding-agent-data-upload"
+    },
+    {
       "date": "2026-04-09",
       "title": "国浩视点 | 股份司法强制执行后，业绩补偿义务该由谁承担？",
       "url": "https://mp.weixin.qq.com/s/U5yigqXDBo-PW6k6JUkbJw",

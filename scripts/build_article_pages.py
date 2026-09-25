@@ -35,6 +35,16 @@ SPECS = {
                "1. 执行中追加，再转诉讼", "2. 执行“终本”后，单独起诉"},
         "skip": {"预览时标签不可点", "上下滑动查看全部"},
     },
+    "2026-09-25-ai-coding-agent-data-upload": {
+        "kicker": "AI合规实务手记",
+        "h2_bare": {"本篇事实来源", "作者简介"},
+        "h4": {"第一类是源代码本身。", "第二类是Git版本历史。", "第三类是运行环境与配置。",
+               "第一关是告知。", "第二关是同意的实质要件。", "第三关是向第三方提供。",
+               "第四关是事前评估。"},
+        "skip": {"预览时标签不可点", "上下滑动查看全部", "· · ·"},
+        "origin_note": "本文原载于黄冬梅律师个人微信公众号『AI合规实务手记』，首发日期 %s。本站全文转载，文字与原文一致，原作者署名及原文声明一并保留。",
+        "keywords": "人工智能,数据合规,个人信息保护,个人信息出境,商业秘密",
+    },
 }
 
 RELATED = {  # 「相关阅读」中的标题 → 本站详情页文件名（详情页同在 articles/ 下，用同目录相对链接）
@@ -215,6 +225,9 @@ def build_page(rec, spec, body_html):
     if "蒋婷婷" in rec.get("source", "") or "合著" in rec.get("source", ""):
         byline = "黄冬梅（国浩律师（重庆）事务所合伙人）、蒋婷婷（国浩律师（重庆）事务所律师）"
     selfurl = "%s/articles/%s.html" % (SITE, rec["slug"])
+    origin = (spec.get("origin_note") or
+              "本文原载于国浩律师事务所微信公众号『国浩视点』，首发日期 %s。本站全文转载，"
+              "文字与原文一致，原作者署名及原文声明一并保留。") % rec["date"]
     authors, names = [], ("黄冬梅、蒋婷婷" if "蒋婷婷" in byline else "黄冬梅").split("、")
     for n in names:
         n = n.strip()
@@ -241,7 +254,7 @@ def build_page(rec, spec, body_html):
         "image": SITE + "/assets/portrait-huangdongmei.jpg",
         "articleSection": spec["kicker"],
         "wordCount": len(re.sub(r"\s+", "", text)),
-        "keywords": "资本市场,债券发行,公司法,国浩视点",
+        "keywords": spec.get("keywords", "资本市场,债券发行,公司法,国浩视点"),
     }
     pc = spec.get("punct_changes") or []
     if pc:
@@ -292,7 +305,7 @@ def build_page(rec, spec, body_html):
     <div class="art-wrap">
       <span class="kicker">%(kicker)s</span>
       <h1>%(plain)s</h1>
-      <div class="art-origin">本文原载于国浩律师事务所微信公众号『国浩视点』，首发日期 %(date)s。本站全文转载，文字与原文一致，原作者署名及原文声明一并保留。</div>
+      <div class="art-origin">%(origin)s</div>
       <p class="art-byline">作者：%(byline)s</p>
       <div class="art-body">
 %(body)s
@@ -311,7 +324,7 @@ def build_page(rec, spec, body_html):
 </html>
 """ % {"punctnote": punctnote, "plain": esc(plain), "title": esc(title), "desc": html.escape(desc, quote=True),
        "selfurl": "%s/articles/%s.html" % (SITE, rec["slug"]), "site": SITE, "kicker": esc(spec["kicker"]),
-       "date": rec["date"], "byline": esc(byline), "body": body_html,
+       "date": rec["date"], "byline": esc(byline), "body": body_html, "origin": esc(origin),
        "url": rec["url"], "css": CSS, "ld": json.dumps(ld, ensure_ascii=False, indent=2)}
 
 
