@@ -69,9 +69,9 @@ def build_llms(data):
             extra = ""
             if "蒋婷婷" in a.get("source", ""):
                 extra = "与蒋婷婷律师合著｜"
-            L.append("- [%s](%s/articles/%s.html)：%s（%s原载国浩律师事务所微信公众号"
-                     "\u201c国浩视点\u201d，首发 %s）" % (a["title"], SITE, a["slug"],
-                                                         a.get("summary", ""), extra, a["date"]))
+            L.append("- [%s](%s/articles/%s.html)：%s（%s原载%s，首发 %s）"
+                     % (a["title"], SITE, a["slug"], a.get("summary", ""), extra,
+                        a.get("origin", "国浩律师事务所微信公众号“国浩视点”"), a["date"]))
     if reps:
         L += ["", "## 项目报道（公开报道）", ""]
         for r in reps:
@@ -91,7 +91,7 @@ def build_llms_full(data, llms):
         f = os.path.join(SRC, a.get("slug", "") + ".txt")
         out.append("## %s" % a["title"])
         out.append("")
-        out.append("- 来源：国浩律师事务所微信公众号\u201c国浩视点\u201d，首发 %s" % a["date"])
+        out.append("- 来源：%s，首发 %s" % (a.get("origin", "国浩律师事务所微信公众号\u201c国浩视点\u201d"), a["date"]))
         out.append("- 本站链接：%s/articles/%s.html" % (SITE, a["slug"]))
         out.append("- 公众号原文：%s" % a["url"])
         out.append("")
