@@ -44,11 +44,25 @@ SPECS = {
         "skip": {"预览时标签不可点", "上下滑动查看全部", "· · ·"},
         "keywords": "人工智能,数据合规,个人信息保护,个人信息出境,商业秘密",
     },
+    "2026-10-09-code-upload-where-data-goes-liability": {
+        "kicker": "国浩重庆办公室",
+        "h2_bare": {"作者简介", "相关阅读"},
+        "h4": {"第一层是主体识别。", "第二层是出境判定。", "第三层是数量门槛。",
+               "行政路径。", "民事路径。", "刑事路径需要克制。",
+               "第一个缺口是授权颗粒度。", "第二个缺口是承诺的可验证性。",
+               "第三个缺口是可观测性。"},
+        "skip": {"预览时标签不可点", "上下滑动查看全部", "· · ·", "GRANDALL"},
+        "keywords": "人工智能,数据合规,个人信息保护,数据出境,商业秘密",
+        "origin_note": "本文原载于国浩律师事务所微信公众号『国浩重庆办公室』，首发日期 2026-10-09。"
+                       "本站全文转载，文字与原文一致，原作者署名及原文声明一并保留。",
+    },
 }
 
 RELATED = {  # 「相关阅读」中的标题 → 本站详情页文件名（详情页同在 articles/ 下，用同目录相对链接）
     "股份司法强制执行后，业绩补偿义务该由谁承担？":
         "2026-04-09-performance-compensation-after-judicial-enforcement.html",
+    "AI助手伸进代码仓库：拿走的是什么，“默认开启”能算同意吗？":
+        "2026-09-25-ai-coding-agent-data-upload.html",
 }
 
 CSS = """
@@ -224,10 +238,12 @@ def build_page(rec, spec, body_html):
     if "蒋婷婷" in rec.get("source", "") or "合著" in rec.get("source", ""):
         byline = "黄冬梅（国浩律师（重庆）事务所合伙人）、蒋婷婷（国浩律师（重庆）事务所律师）"
     selfurl = "%s/articles/%s.html" % (SITE, rec["slug"])
-    origin = (spec.get("origin_note") or
-              "本文原载于%s，首发日期 %s。本站全文转载，"
-              "文字与原文一致，原作者署名及原文声明一并保留。"
-              ) % (rec.get("origin", "国浩律师事务所微信公众号『国浩视点』"), rec["date"])
+    if spec.get("origin_note"):
+        origin = spec["origin_note"]
+    else:
+        origin = ("本文原载于%s，首发日期 %s。本站全文转载，"
+                  "文字与原文一致，原作者署名及原文声明一并保留。"
+                  ) % (rec.get("origin", "国浩律师事务所微信公众号『国浩视点』"), rec["date"])
     authors, names = [], ("黄冬梅、蒋婷婷" if "蒋婷婷" in byline else "黄冬梅").split("、")
     for n in names:
         n = n.strip()
